@@ -1,7 +1,8 @@
 ﻿#singleinstance force
 GithubFolder := "F:\GitCode"
-git_commit()
 Comment :=
+git_commit()
+
 
 return
 
@@ -27,7 +28,6 @@ git_commit()
 		RegExMatch(filePath, "(\\[^\\]*)\.(ahk|AHK)", subpat)
 		folder := GithubFolder . "\ahk"
 		folder .= subpat1
-		;msgbox, %folder%
 	}
 	else
 	{
@@ -52,9 +52,7 @@ git_commit()
 			msgbox, 复制文件失败！
 			return
 		}
-		;msgbox,%folder%
 		Output := StdoutToVar_CreateProcess("git diff", "", folder)
-		;msgbox, %Output%
 		if(!Output)
 		{
 			traytip, , 两个文件相同！
@@ -63,7 +61,6 @@ git_commit()
 		}
 		else
 			Output := StdoutToVar_CreateProcess("git add " . fileName, "", folder)
-		;msgbox, %Output%
 		comment_gui()
 		while(!Comment)
 			sleep, 1000
@@ -83,7 +80,8 @@ git_commit()
 		}
 		else
 		{
-			msgbox, to be continued!
+			Output := StdoutToVar_CreateProcess("git push origin master", "", folder)
+			msgbox, %Output%
 		}
 		
 	}
@@ -96,7 +94,6 @@ git_commit()
 			sleep, 100
 			git_init(folder)
 		}
-		;to be continued
 	}
 	
 	
