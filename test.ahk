@@ -54,14 +54,16 @@ git_commit()
 		}
 		;msgbox,%folder%
 		Output := StdoutToVar_CreateProcess("git diff", "", folder)
-		msgbox, %Output%
+		;msgbox, %Output%
 		if(!Output)
 		{
 			traytip, , 两个文件相同！
-			return
+			if(!StdoutToVar_CreateProcess("git diff --cached", "", folder))
+				return
 		}
-		Output := StdoutToVar_CreateProcess("git add " . fileName, "", folder)
-		msgbox, %Output%
+		else
+			Output := StdoutToVar_CreateProcess("git add " . fileName, "", folder)
+		;msgbox, %Output%
 		comment_gui()
 		while(!Comment)
 			sleep, 1000
