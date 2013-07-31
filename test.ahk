@@ -61,7 +61,7 @@ git_commit()
 			return
 		}
 		Output := StdoutToVar_CreateProcess("git add " . fileName, "", folder)
-		;msgbox, %Output%
+		msgbox, %Output%
 		comment_gui()
 		while(!Comment)
 			sleep, 1000
