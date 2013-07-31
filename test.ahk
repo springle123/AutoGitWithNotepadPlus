@@ -1,66 +1,102 @@
 ﻿#singleinstance force
-
+GithubFolder := "F:\GitCode"
 git_commit()
+Comment :=
 
 return
+
+	
+CommentPanelGuiClose:
+CommentPanelButtonOK:
+	submit_comment()
+	return
 
 
 
 git_commit()
 {
+	global Comment, GithubFolder 
 	WinGetTitle, title, ahk_class Notepad++
 	StringTrimRight, filePath, title, 12
 	RegExMatch(title, "U)[^\\]*(?=\s)", fileName)
 	RegExMatch(filePath, "\..*\b", fileType)
 	StringTrimLeft, fileType, fileType, 1, 1
+	
 	if(fileType = "ahk" || fileType = "AHK")
 	{
 		RegExMatch(filePath, "(\\[^\\]*)\.(ahk|AHK)", subpat)
-		folder := "F:\GitCode\ahk"
+		folder := GithubFolder . "\ahk"
 		folder .= subpat1
-		;msgbox, %folder%
-		if(FileExist(folder))
-		{
-			gitFolder := folder . "\.git"
-			if(!FileExist(gitFolder))
-			{
-				msgbox, 4, , 当前git目录下文件夹未加入git资料库管理， 是否加入？
-				ifmsgbox, yes
-					git_init(folder)
-				else
-					return			
-			}
-			sleep,100
-			filecopy, %filePath%, %folder%, 1
-			if(ErrorLevel != 0)
-			{
-				msgbox, 复制文件失败！
-				return
-			}
-			;msgbox,%folder%
-			Output := StdoutToVar_CreateProcess("git add " . fileName, "", folder)
-			msgbox, %Output%
-			sleep, 100
-			Output := StdoutToVar_CreateProcess("git commit -m ""first commit""", "", folder)
-			msgbox, %Output%
-		}
-		else
-		{
-			msgbox, 4, , 当前文件未加入gitgub资料库管理， 是否加入？
-			ifmsgbox, yes
-			{
-				FileCreateDir, %folder%
-				sleep, 100
-				git_init(folder)
-			}
-			;to be continued
-		}
+		msgbox, %folder%
 	}
 	else
 	{
 		msgbox, 当前编辑文件类型未设置github同步！
 		return
 	}
+	
+	if(FileExist(folder))
+	{
+		gitFolder := folder . "\.git"
+		if(!FileExist(gitFolder))
+		{
+			msgbox, 4, , 所在文件夹未加入git资料库管理， 是否加入？
+			ifmsgbox, yes
+				git_init(folder)
+			else
+				return			
+		}
+		filecopy, %filePath%, %folder%, 1
+		if(ErrorLevel != 0)
+		{
+			msgbox, 复制文件失败！
+			return
+		}
+		;msgbox,%folder%
+		Output := StdoutToVar_CreateProcess("git diff", "", folder)
+		if(!Output)
+		{
+			traytip, , 两个文件相同！
+			return
+		}
+		Output := StdoutToVar_CreateProcess("git add " . fileName, "", folder)
+		;msgbox, %Output%
+		comment_gui()
+		while(!Comment)
+			sleep, 1000
+		Output := StdoutToVar_CreateProcess("git commit -m " . """" . Comment . """", "", folder)
+		msgbox, %Output%
+		Output := StdoutToVar_CreateProcess("git remote -v", "", folder)
+		if(!Output)
+		{
+			msgbox, 4, , 此资料库未加入远程管理， 是否加入？
+			ifmsgbox no
+				return
+			else
+			{
+				run, https://github.com/
+				return
+			}
+		}
+		else
+		{
+			msgbox, to be continued!
+		}
+		
+	}
+	else
+	{
+		msgbox, 4, , 当前文件未加入gitgub资料库管理， 是否加入？
+		ifmsgbox, yes
+		{
+			FileCreateDir, %folder%
+			sleep, 100
+			git_init(folder)
+		}
+		;to be continued
+	}
+	
+	
 }
 
 git_init(folder)
@@ -75,6 +111,33 @@ git_init(folder)
 	else
 		traytip, , 初始化成功！
 	
+}
+
+comment_gui()
+{
+	global Comment
+	Gui, CommentPanel: New  
+	Gui, CommentPanel: Add, Text,, Enter your comment:
+	Gui, CommentPanel: Add, Edit, vComment ym  ; ym 选项开始一个新的控件列.
+	Gui, CommentPanel: Add, Button, default ym , OK ; ButtonOK (如果存在的话) 会在此按钮被按下时运行.
+	Gui, CommentPanel: Show,, Enter your comment
+	return  ; 自动运行段结束. 在用户进行操作前脚本会一直保持空闲状态.
+}
+	
+
+	
+submit_comment()
+{
+	global Comment
+	Gui, CommentPanel: Submit  ; 保存用户的输入到每个控件的关联变量中.
+	if(!Comment)
+	{
+		traytip, , Comment不能为空, 请重新输入。
+		Gui, CommentPanel: Show,, Enter your comment
+		return
+	}
+	Gui, CommentPanel: Destroy
+	return
 }
 
 
