@@ -27,7 +27,7 @@ git_commit()
 		RegExMatch(filePath, "(\\[^\\]*)\.(ahk|AHK)", subpat)
 		folder := GithubFolder . "\ahk"
 		folder .= subpat1
-		msgbox, %folder%
+		;msgbox, %folder%
 	}
 	else
 	{
@@ -54,6 +54,7 @@ git_commit()
 		}
 		;msgbox,%folder%
 		Output := StdoutToVar_CreateProcess("git diff", "", folder)
+		msgbox, %Output%
 		if(!Output)
 		{
 			traytip, , 两个文件相同！
